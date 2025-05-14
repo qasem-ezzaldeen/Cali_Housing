@@ -1,5 +1,4 @@
 import numpy as np
-import traceback
 import pandas as pd
 import matplotlib.pyplot as plt
 import skfuzzy as fuzz
@@ -70,9 +69,18 @@ class CaliforniaHousingPredictor:
     def build_model(self, input_shape):
         """Build and compile neural network for price prediction"""
         model = Sequential()
-        model.add(Dense(32, activation='relu', input_shape=(input_shape,)))
-        model.add(Dense(16, activation='relu'))
-        model.add(Dense(8, activation='relu'))
+        model.add(Dense(256, activation='relu', input_shape=(input_shape,)))
+        model.add(Dense(256, activation='relu'))
+        model.add(Dense(256, activation='relu'))
+        model.add(Dense(128, activation='relu'))
+        model.add(Dense(128, activation='relu'))
+        model.add(Dense(128, activation='relu'))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(32, activation='relu'))
+        model.add(Dense(32, activation='relu'))
+        model.add(Dense(32, activation='relu'))
         model.add(Dense(1))
         
         # Use a learning rate scheduler for better convergence
@@ -238,8 +246,6 @@ class CaliforniaHousingPredictor:
             return self.fuzzy_system
         except Exception as e:
             print(f"Error building fuzzy system: {e}")
-            print("Traceback for main fuzzy system creation failure:")
-            traceback.print_exc()
             # Create a simplified fallback system if the main one fails
             try:
                 # Create a simplified system with fewer rules
@@ -284,8 +290,6 @@ class CaliforniaHousingPredictor:
                 return self.fuzzy_system
             except Exception as e2:
                 print(f"Failed to create fallback fuzzy system: {e2}")
-                print("Traceback for fallback fuzzy system creation failure:")
-                traceback.print_exc()
                 return None
     
     def get_fuzzy_recommendation(self, price, rooms, location_quality):
@@ -300,21 +304,19 @@ class CaliforniaHousingPredictor:
             self.fuzzy_system.input['rooms'] = float(rooms)
             self.fuzzy_system.input['location_quality'] = float(location_quality)
             
-            print(f"DEBUG: Fuzzy inputs before compute: price={price}, rooms={rooms}, location_quality={location_quality}")
+            # print(f"DEBUG: Fuzzy inputs before compute: price={price}, rooms={rooms}, location_quality={location_quality}")
             self.fuzzy_system.compute()
-            print(f"DEBUG: Fuzzy output dict after compute: {self.fuzzy_system.output}")
+            # print(f"DEBUG: Fuzzy output dict after compute: {self.fuzzy_system.output}")
             # For more detailed debugging, if needed later, uncomment:
             # self.fuzzy_system.print_state()
             # Use .get() to provide a default value if 'recommendation' is not in the output
             recommendation_value = self.fuzzy_system.output.get('recommendation', 50) 
-            if recommendation_value == 50 and 'recommendation' not in self.fuzzy_system.output:
-                print("DEBUG: 'recommendation' key not found in fuzzy_system.output. Defaulting to 50.")
+            # if recommendation_value == 50 and 'recommendation' not in self.fuzzy_system.output:
+                # print("DEBUG: 'recommendation' key not found in fuzzy_system.output. Defaulting to 50.")
             return recommendation_value
         except Exception as e:
             # Handle potential errors in fuzzy computation with more detailed error message
             print(f"Error in fuzzy computation: {e}. Using default value.")
-            print("Traceback for fuzzy computation error:")
-            traceback.print_exc()
             return 50
     
     def evaluate_properties(self, X_test, y_test, num_samples=10):
@@ -371,7 +373,7 @@ class CaliforniaHousingPredictor:
     
     def visualize_fuzzy_membership(self):
         """Visualize fuzzy membership functions"""
-        print("\nVisualizing fuzzy membership functions...")
+        # print("\nVisualizing fuzzy membership functions...")
         # Create the fuzzy variables again for visualization
         price = ctrl.Antecedent(np.arange(0, 51, 1), 'price')
         rooms = ctrl.Antecedent(np.arange(3, 9, 0.1), 'rooms')
@@ -400,19 +402,7 @@ class CaliforniaHousingPredictor:
         
         # Visualize
         plt.figure(figsize=(15, 10))
-        
-        plt.subplot(4, 1, 1)
-        price.view()
-        plt.title('Price Membership')
-        
-        plt.subplot(4, 1, 2)
-        rooms.view()
-        plt.title('Rooms Membership')
-        
-        plt.subplot(4, 1, 3)
-        location_quality.view()
-        plt.title('Location Quality Membership')
-        
+
         plt.subplot(4, 1, 4)
         recommendation.view()
         plt.title('Recommendation Membership')
@@ -423,7 +413,7 @@ class CaliforniaHousingPredictor:
     
     def visualize_results(self, results, feature_names):
         """Visualize evaluation results"""
-        print("\nVisualizing evaluation results...")
+        # print("\nVisualizing evaluation results...")
         # Extract data for visualization
         actual_prices = [r['actual_price'] for r in results]
         predicted_prices = [r['predicted_price'] for r in results]
@@ -475,7 +465,7 @@ def main():
     
     # Build and train model
     predictor.build_model(X_train.shape[1])
-    history = predictor.train_model(X_train, y_train, epochs=50)
+    history = predictor.train_model(X_train, y_train, epochs=100)
     
     # Evaluate model performance
     mse, rmse, accuracy = predictor.evaluate_model(X_test, y_test)
