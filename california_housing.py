@@ -7,8 +7,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.datasets import fetch_california_housing
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.models import Sequential #type: ignore
+from tensorflow.keras.layers import Dense, Dropout #type: ignore
 
 # Configure TensorFlow to use GPU
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -61,27 +61,22 @@ class CaliforniaHousingPredictor:
         
         # Split into train and test sets
         X_train, X_test, y_train, y_test = train_test_split(
-            X_scaled, y_scaled, test_size=0.2, random_state=42
+            X_scaled, y_scaled, test_size=0.2, random_state=14
         )
         
         return X_train, X_test, y_train, y_test
     
     def build_model(self, input_shape):
         """Build and compile neural network for price prediction"""
-        model = Sequential()
-        model.add(Dense(256, activation='relu', input_shape=(input_shape,)))
-        model.add(Dense(256, activation='relu'))
-        model.add(Dense(256, activation='relu'))
-        model.add(Dense(128, activation='relu'))
-        model.add(Dense(128, activation='relu'))
-        model.add(Dense(128, activation='relu'))
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(32, activation='relu'))
-        model.add(Dense(32, activation='relu'))
-        model.add(Dense(32, activation='relu'))
-        model.add(Dense(1))
+        model = Sequential([
+            Dense(512, activation='relu', input_shape=(input_shape,)),
+            Dense(256, activation='relu'),
+            Dense(128, activation='relu'),
+            Dropout(0.2),
+            Dense(64, activation='relu'),
+            Dense(1)
+        ])
+        
         
         # Use a learning rate scheduler for better convergence
         optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
@@ -177,7 +172,7 @@ class CaliforniaHousingPredictor:
         plt.ylabel('Predicted Prices ($100k)')
         plt.title('Actual vs Predicted Housing Prices')
         plt.tight_layout()
-        plt.savefig('california_housing_prediction.png')
+        # plt.savefig('california_housing_prediction.png')
         # plt.show()  # Commented out to avoid display issues
         
         return mse, rmse, r_squared
@@ -408,7 +403,7 @@ class CaliforniaHousingPredictor:
         plt.title('Recommendation Membership')
         
         plt.tight_layout()
-        plt.savefig('california_fuzzy_membership.png')
+        # plt.savefig('california_fuzzy_membership.png')
         # plt.show()  # Commented out to avoid display issues
     
     def visualize_results(self, results, feature_names):
@@ -449,7 +444,7 @@ class CaliforniaHousingPredictor:
         plt.grid(True, alpha=0.3)
         
         plt.tight_layout()
-        plt.savefig('california_housing_evaluation.png')
+        # plt.savefig('california_housing_evaluation.png')
         # plt.show()  # Commented out to avoid display issues
 
 # Main execution
